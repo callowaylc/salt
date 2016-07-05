@@ -1,0 +1,7 @@
+#!/bin/bash
+# Decrypt file using rsa private key
+# Usage: ./decrypt $key $file
+cat $2 \
+  | openssl rsautl \
+      -decrypt \
+      -inkey $1

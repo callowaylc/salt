@@ -1,0 +1,7 @@
+#!/bin/bash
+# Encrypts a file with rsa key and pipes to stdout
+# Usage: ./ecrypt path/to/pub/key path/to/file/to/encrypt
+cat $2 \
+ | openssl rsautl \
+     -encrypt \
+     -pubin -inkey $1
