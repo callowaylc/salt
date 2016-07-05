@@ -30,13 +30,13 @@ end
 namespace :pillar do
   desc "encrypt pillar"
   task :encrypt do
-    puts puts %{
+    command %{
       key="#{ home }/.stack/key"
       openssl rand -base64 128 -out $key
 
       find #{ home }/stack -name '*.yml' | while read file
         do
-          path=`echo $file | tr .stack stack`
+          path=`echo $file | sed 's/stack/.stack/'`
           cat $file | openssl \
             enc \
             -aes-256-cbc \
