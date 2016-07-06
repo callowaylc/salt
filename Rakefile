@@ -49,7 +49,7 @@ namespace :pillar do
       cat $key | openssl \
         rsautl \
         -encrypt \
-        -inkey /etc/ssl/public/salt.public.pem \
+        -inkey ~/.ssh/salt.public.pem \
         -pubin > $key.encrypted
 
       rm $key
@@ -69,13 +69,15 @@ namespace :pillar do
       find #{ home }/.stack -name '*.yml' | while read file
         do
           path=`echo $file | sed 's/.stack/stack/'`
-          mkdir `dirname $path` > /dev/null 2>&1
+          mkdir -p `dirname $path` > /dev/null 2>&1
           cat $file | openssl \
             enc \
             -d \
             -aes-256-cbc \
             -pass file:$key > $path
       done
+
+      rm $key
     }
   end
 end
