@@ -82,6 +82,19 @@ namespace :pillar do
   end
 end
 
+desc "sync to remote environment"
+task :sync, [ :remote ] do | t, arguments |
+  command  %{
+    # below isnt working in rake context.. falling back
+    # to ruby solution
+    #path=`pwd`
+    #repository=${path/$HOME/\~}
+    repository="#{ home.sub ENV['HOME'], '~' }"
+    fsync ./ #{ arguments[:remote] }:$repository \
+      > /tmp/sync.`basename $repository`.log 2>&1 &
+  }
+end
+
 desc "Execute salt command against master"
 task :salt, [ :command ] do | t, arguments |
   exec %{
