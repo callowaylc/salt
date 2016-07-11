@@ -1,0 +1,15 @@
+#!/bin/bash
+{ pkill -9 -f sync-states & } > /dev/null 2>&1
+
+(
+  nohup sh -c "
+    while inotifywait -rq $1 > /dev/null; do
+        sudo rsync \
+          -azv \
+          --delete \
+          $1/ \
+          /docker/salt-master-0/srv/salt \
+            > /tmp/sync-states.log 2>&1
+    done
+  " > /dev/null 2>&1
+) &
