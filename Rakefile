@@ -102,6 +102,11 @@ task :salt, [ :command ] do | t, arguments |
   }
 end
 
+desc "Run salt master"
+task :run do | t, arguments |
+  Rake::Task['salt:master'].invoke 'restart'
+end
+
 ## methods ######################################
 
 private def command bash
