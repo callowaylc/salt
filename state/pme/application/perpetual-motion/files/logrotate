@@ -1,0 +1,9 @@
+/var/log/perpetual-motion/* {
+    hourly
+    rotate 1
+    maxsize 100M
+    missingok
+    notifempty
+    compress
+    create 0664 christian christian
+}
