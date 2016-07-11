@@ -10,6 +10,8 @@ RUN true && \
   chmod +x /usr/local/bin/bootstrap-salt && \
   bootstrap-salt -X -d -M git v2016.3.1
 
+COPY etc/ /etc/
+
 # Volumes #######################################
 
 VOLUME ["/etc/salt/pki", "/var/log/salt", "/etc/salt/master.d", "/srv/salt"]

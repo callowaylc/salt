@@ -18,9 +18,9 @@ namespace :salt do
         --publish="0.0.0.0:4505:4505" \
         --publish="0.0.0.0:4506:4506" \
         --volume="/docker/salt-master-0/etc/salt/pki:/etc/salt/pki" \
-        --volume="/docker/salt-master-0/var/log/salt:/var/log/salt:ro" \
-        --volume="/docker/salt-master-0/etc/salt/master.d:/etc/salt/master.d:ro" \
-        --volume="/docker/salt-master-0/srv/salt:/srv/salt:ro" \
+        --volume="/docker/salt-master-0/var/log/salt:/var/log/salt" \
+        --volume="/docker/salt-master-0/etc/salt/master.d:/etc/salt/master.d" \
+        --volume="/docker/salt-master-0/srv/salt:/srv/salt" \
           callowaylc/salt-master \
             --log-level=warning > /dev/stdout
     } if %w{ start restart }.include? arguments[:action]
