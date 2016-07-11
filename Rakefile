@@ -25,6 +25,39 @@ namespace :salt do
             --log-level=warning > /dev/stdout
     } if %w{ start restart }.include? arguments[:action]
   end
+
+  desc "Usage: {start|stop|reload|restart|force-reload|install}"
+  task :minion, [ :action, :host ] do | t, arguments |
+    exec %{
+      path=`dirname $0`
+      host="#{ arguments[:host] }"
+      echo $host > $path/.master
+
+      sudo su -c "
+        sed -i '/salt/d' /etc/hosts
+        echo $host salt >> /etc/hosts
+      "
+    } unless arguments[:host].nil?
+
+    command %{
+      sudo pkill -9 -f salt-minion > /dev/null 2>&1
+    } if %w{ start restart stop }.include? arguments[:action]
+
+    exec %{
+      sudo nohup salt-minion > /dev/null 2>&1 &
+    } if %w{ start restart }.include? arguments[:action]
+
+    exec %{
+      sudo su -c "
+        apt-get update && \
+        apt-get install -y curl && \
+        apt-get autoremove -y && \
+        curl -Ls https://bootstrap.saltstack.com > /usr/local/bin/bootstrap-salt && \
+        chmod +x /usr/local/bin/bootstrap-salt && \
+        bootstrap-salt -X -d git v2016.3.1
+      "
+    } if %w{ install }.include? arguments[:action]
+  end
 end
 
 namespace :pillar do
@@ -102,9 +135,16 @@ task :salt, [ :command ] do | t, arguments |
   }
 end
 
-desc "Run salt master"
-task :run do | t, arguments |
-  Rake::Task['salt:master'].invoke 'restart'
+namespace :run do
+  desc "run salt-master"
+  task :master do | t, arguments |
+    Rake::Task['salt:master'].invoke 'restart'
+  end
+
+  desc "run salt-minion"
+  task :minion do | t, arguments |
+    Rake::Task['salt:minion'].invoke 'restart'
+  end
 end
 
 ## methods ######################################
