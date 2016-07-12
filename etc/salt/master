@@ -6,6 +6,7 @@
 file_roots:
   base:
     - /srv/salt/pme
+    - /srv/salt/media-server
     - /srv/salt/generic
 
 # pillar-stack ############################
@@ -13,4 +14,5 @@ file_roots:
 ext_pillar:
   - stack:
       - /etc/salt/pme/stack.cfg
-      - /srv/salt/generic/stack.cfg
+      - /etc/salt/media-server/stack.cfg
+      - /etc/salt/generic/stack.cfg

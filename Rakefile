@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 # callowaylc@gmail
-# includes individual tasks
+# Provides utility tasks for managing salt instances
 
 ## tasks ########################################
 
@@ -18,11 +18,14 @@ namespace :salt do
         --publish="0.0.0.0:4505:4505" \
         --publish="0.0.0.0:4506:4506" \
         --volume="/docker/salt-master-0/etc/salt/pki:/etc/salt/pki" \
+        --volume="/docker/salt-master-0/etc/salt/generic/stack:/etc/salt/generic/stack" \
         --volume="/docker/salt-master-0/var/log/salt:/var/log/salt" \
         --volume="/docker/salt-master-0/etc/salt/master.d:/etc/salt/master.d" \
         --volume="/docker/salt-master-0/srv/salt:/srv/salt" \
           callowaylc/salt-master \
             --log-level=warning > /dev/stdout
+
+      sudo chmod o+w /docker/salt-master-0/etc/salt/generic/stack
     } if %w{ start restart }.include? arguments[:action]
   end
 
@@ -118,13 +121,22 @@ end
 desc "sync to remote environment"
 task :sync, [ :remote ] do | t, arguments |
   command  %{
+    # kill any previous fsync processes attached to this sync
+    pkill -9 -f __salt__
+
     # below isnt working in rake context.. falling back
     # to ruby solution
     #path=`pwd`
     #repository=${path/$HOME/\~}
     repository="#{ home.sub ENV['HOME'], '~' }"
-    fsync ./ #{ arguments[:remote] }:$repository \
-      > /tmp/sync.`basename $repository`.log 2>&1 &
+      fsync ./ #{ arguments[:remote] }:$repository __salt__ \
+        > /tmp/sync.`basename $repository`.log 2>&1 &
+
+    # TODO: iteratate through stacks
+    stacks=( generic pme media-server )
+      fsync ./stack/generic \
+        #{ arguments[:remote] }:/docker/salt-master-0/etc/salt/generic/stack __salt__ \
+          > /tmp/sync.stack.generic.log 2>&1 &
   }
 end
 
