@@ -67,6 +67,7 @@ namespace :pillar do
   desc "encrypt pillar"
   task :encrypt do
     command %{
+      rm -rf #{ home }/.stack/*
       key="#{ home }/.stack/key"
       openssl rand -base64 128 -out $key
 
@@ -95,6 +96,7 @@ namespace :pillar do
   desc "decrypt pillar"
   task :decrypt do
     command %{
+      rm -rf #{ home }/stack
       key="#{ home }/.stack/key"
       cat $key.encrypted | openssl \
         rsautl \
