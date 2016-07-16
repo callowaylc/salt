@@ -17,7 +17,6 @@
 
 {%- for command, packages in __pillar__.iteritems() %}
   {%- for pkg, version in packages.iteritems() %}
-
 {{ ns }}/install/{{ pkg }}:
   cmd.run:
     - name: |
@@ -27,6 +26,5 @@
           {%- endif %}
         {%- endif %}
         {{ command | replace( '$name', pkg ) | replace( '$version', version ) }}
-
   {%- endfor %}
 {%- endfor %}
