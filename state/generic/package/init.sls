@@ -23,6 +23,8 @@
         {%- if version in [ 'latest' ] %}
           {%- if 'apt' in command %}
             {%- set command = command.replace( '=$version', '' ) %}
+          {%- elif 'gem' in command %}
+            {%- set command = command.replace( '-v $version', '' ) %}
           {%- endif %}
         {%- endif %}
         {{ command | replace( '$name', pkg ) | replace( '$version', version ) }}
