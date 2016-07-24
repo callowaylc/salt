@@ -24,6 +24,8 @@ namespace :salt do
         --volume="/docker/salt-master-0/etc/salt/pki:/etc/salt/pki" \
         --volume="/docker/salt-master-0/etc/salt/generic/stack:/etc/salt/generic/stack" \
         --volume="/docker/salt-master-0/etc/salt/pme/stack:/etc/salt/pme/stack" \
+        --volume="/docker/salt-master-0/etc/salt/gup/stack:/etc/salt/gup/stack" \
+        --volume="/docker/salt-master-0/etc/salt/media-server/stack:/etc/salt/media-server/stack" \
         --volume="/docker/salt-master-0/var/log/salt:/var/log/salt" \
         --volume="/docker/salt-master-0/etc/salt/master.d:/etc/salt/master.d" \
         --volume="/docker/salt-master-0/srv/salt:/srv/salt" \
@@ -143,7 +145,8 @@ task :sync, [ :remote ] do | t, arguments |
           --exclude=.git \
           --exclude=pids \
           --exclude=logs \
-           --delete \
+          --omit-dir-times \
+          --delete \
             $1/ $2
     }
 
@@ -156,8 +159,8 @@ task :sync, [ :remote ] do | t, arguments |
     stacks=( generic pme media-server gup )
     for stack in "${stacks[@]}"
       do
-        fsync ./stack/generic \
-          $remote:/docker/salt-master-0/etc/salt/generic/stack __salt__ \
+        fsync ./stack/$stack \
+          $remote:/docker/salt-master-0/etc/salt/$stack/stack __salt__ \
             > /tmp/sync.stack.$stack.log 2>&1 &
     done
 

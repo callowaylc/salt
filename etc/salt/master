@@ -13,6 +13,7 @@ file_roots:
 
 ext_pillar:
   - stack:
+      - /etc/salt/gup/stack.cfg
       - /etc/salt/pme/stack.cfg
       - /etc/salt/media-server/stack.cfg
       - /etc/salt/generic/stack.cfg
