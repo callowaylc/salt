@@ -8,6 +8,10 @@ namespace :salt do
   desc "Usage: {start|stop|reload|restart|force-reload}"
   task :master, [ :action ] do | t, arguments |
     command %{
+      sudo docker build -t callowaylc/salt-master ./
+    } if %w{ start restart stop }.include? arguments[:build]
+
+    command %{
       sudo docker rm -f salt-master-0 > /dev/null 2>&1
     } if %w{ start restart stop }.include? arguments[:action]
 
@@ -19,6 +23,7 @@ namespace :salt do
         --publish="0.0.0.0:4506:4506" \
         --volume="/docker/salt-master-0/etc/salt/pki:/etc/salt/pki" \
         --volume="/docker/salt-master-0/etc/salt/generic/stack:/etc/salt/generic/stack" \
+        --volume="/docker/salt-master-0/etc/salt/pme/stack:/etc/salt/pme/stack" \
         --volume="/docker/salt-master-0/var/log/salt:/var/log/salt" \
         --volume="/docker/salt-master-0/etc/salt/master.d:/etc/salt/master.d" \
         --volume="/docker/salt-master-0/srv/salt:/srv/salt" \
@@ -123,22 +128,24 @@ end
 desc "sync to remote environment"
 task :sync, [ :remote ] do | t, arguments |
   command  %{
+    remote=#{ arguments[:remote] || 'pme-master' }
+    repository="#{ home.sub ENV['HOME'], '~' }"
+
     # kill any previous fsync processes attached to this sync
     pkill -9 -f __salt__
 
-    # below isnt working in rake context.. falling back
-    # to ruby solution
-    #path=`pwd`
-    #repository=${path/$HOME/\~}
-    repository="#{ home.sub ENV['HOME'], '~' }"
-      fsync ./ #{ arguments[:remote] }:$repository __salt__ \
-        > /tmp/sync.`basename $repository`.log 2>&1 &
+    fsync ./ $remote:$repository __salt__ \
+      > /tmp/sync.`basename $repository`.log 2>&1 &
 
-    # TODO: iteratate through stacks
-    stacks=( generic pme media-server )
-      fsync ./stack/generic \
-        #{ arguments[:remote] }:/docker/salt-master-0/etc/salt/generic/stack __salt__ \
-          > /tmp/sync.stack.generic.log 2>&1 &
+    stacks=( generic pme media-server gup )
+    for stack in "${stacks[@]}"
+      do
+        fsync ./stack/generic \
+          $remote:/docker/salt-master-0/etc/salt/generic/stack __salt__ \
+            > /tmp/sync.stack.generic.log 2>&1 &
+    done
+
+    touch ./
   }
 end
 
