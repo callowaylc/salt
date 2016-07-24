@@ -131,6 +131,22 @@ task :sync, [ :remote ] do | t, arguments |
     remote=#{ arguments[:remote] || 'pme-master' }
     repository="#{ home.sub ENV['HOME'], '~' }"
 
+    brew install fswatch > /dev/null 2>&1
+
+    function fsync {
+      fswatch -0 $1 __salt__ | xargs -0 -n1 -I {} \
+        rsync \
+          -azv \
+          --no-perms \
+          --no-owner \
+          --no-group \
+          --exclude=.git \
+          --exclude=pids \
+          --exclude=logs \
+           --delete \
+            $1/ $2
+    }
+
     # kill any previous fsync processes attached to this sync
     pkill -9 -f __salt__
 
@@ -142,7 +158,7 @@ task :sync, [ :remote ] do | t, arguments |
       do
         fsync ./stack/generic \
           $remote:/docker/salt-master-0/etc/salt/generic/stack __salt__ \
-            > /tmp/sync.stack.generic.log 2>&1 &
+            > /tmp/sync.stack.$stack.log 2>&1 &
     done
 
     touch ./
